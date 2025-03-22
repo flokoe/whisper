@@ -1,0 +1,8 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/de.flokoe.Whisper.desktop.in
+data/de.flokoe.Whisper.metainfo.xml.in
+data/de.flokoe.Whisper.gschema.xml
+src/main.py
+src/window.py
+src/window.ui

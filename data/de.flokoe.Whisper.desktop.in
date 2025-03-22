@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=whisper
+Exec=whisper
+Icon=de.flokoe.Whisper
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=GTK;
+StartupNotify=true
+DBusActivatable=true
