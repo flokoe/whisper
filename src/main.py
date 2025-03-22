@@ -23,8 +23,8 @@ import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
-from gi.repository import Gtk, Gio, Adw
-from .window import WhisperWindow
+from gi.repository import Gtk, Gio, Adw  # noqa: E402
+from .window import WhisperWindow  # noqa: E402
 
 
 class WhisperApplication(Adw.Application):
