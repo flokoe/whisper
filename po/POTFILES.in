@@ -5,4 +5,4 @@ data/de.flokoe.Whisper.metainfo.xml.in
 data/de.flokoe.Whisper.gschema.xml
 src/main.py
 src/window.py
-src/window.ui
+src/window.blp
