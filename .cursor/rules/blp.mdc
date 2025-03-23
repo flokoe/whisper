@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+This project uses the modern, declarative Blueprint DSL to describe the UI.
+
+If you see references to old XML UI files (`.ui` extension) it probably refers to compiled resources in the Flatpak.
+Try to look for coresponding files with an `.blp` extension. Example:
+
+`windows.ui` -> `window.blp`
+
+Also, **never** create `.ui` files. **Always** use the new Blueprint syntax and `.blp` files.
