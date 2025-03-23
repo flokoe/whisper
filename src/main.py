@@ -19,11 +19,13 @@
 
 import sys
 import gi
+from gettext import gettext as _
+from typing import Callable
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
-from gi.repository import Gtk, Gio, Adw  # noqa: E402
+from gi.repository import Gio, Adw  # noqa: E402
 from .window import WhisperWindow  # noqa: E402
 
 
@@ -49,7 +51,7 @@ class WhisperApplication(Adw.Application):
             win = WhisperWindow(application=self)
         win.present()
 
-    def on_about_action(self, *args):
+    def on_about_action(self, *args: object) -> None:
         """Callback for the app.about action."""
         about = Adw.AboutDialog(application_name='whisper',
                                 application_icon='de.flokoe.Whisper',
@@ -61,11 +63,11 @@ class WhisperApplication(Adw.Application):
         about.set_translator_credits(_('translator-credits'))
         about.present(self.props.active_window)
 
-    def on_preferences_action(self, widget, _):
+    def on_preferences_action(self, widget: Gio.SimpleAction, _: object) -> None:
         """Callback for the app.preferences action."""
         print('app.preferences action activated')
 
-    def create_action(self, name, callback, shortcuts=None):
+    def create_action(self, name: str, callback: Callable[..., None], shortcuts: list[str] | None = None):
         """Add an application action.
 
         Args:
@@ -81,7 +83,7 @@ class WhisperApplication(Adw.Application):
             self.set_accels_for_action(f"app.{name}", shortcuts)
 
 
-def main(version):
+def main(version: str) -> int:
     """The application's entry point."""
     app = WhisperApplication()
     return app.run(sys.argv)

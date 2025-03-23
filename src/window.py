@@ -19,6 +19,7 @@
 
 from gi.repository import Adw
 from gi.repository import Gtk
+from typing import Any
 
 @Gtk.Template(resource_path='/de/flokoe/Whisper/window.ui')
 class WhisperWindow(Adw.ApplicationWindow):
@@ -26,5 +27,5 @@ class WhisperWindow(Adw.ApplicationWindow):
 
     label = Gtk.Template.Child()
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

@@ -1,4 +1,5 @@
 #!@PYTHON@
+# pyright: reportMissingImports=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false
 
 # whisper.in
 #
@@ -36,11 +37,9 @@ locale.textdomain('whisper')
 gettext.install('whisper', localedir)
 
 if __name__ == '__main__':
-    import gi
-
     from gi.repository import Gio
     resource = Gio.Resource.load(os.path.join(pkgdatadir, 'whisper.gresource'))
-    resource._register()
+    resource._register()  # type: ignore
 
     from whisper import main
     sys.exit(main.main(VERSION))
