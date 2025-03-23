@@ -17,13 +17,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gi.repository import Adw
-from gi.repository import Gtk
 from typing import Any
 
-@Gtk.Template(resource_path='/de/flokoe/Whisper/window.ui')
+from gi.repository import Adw, Gtk
+
+
+@Gtk.Template(resource_path="/de/flokoe/Whisper/window.ui")
 class WhisperWindow(Adw.ApplicationWindow):
-    __gtype_name__ = 'WhisperWindow'
+    __gtype_name__ = "WhisperWindow"
 
     label = Gtk.Template.Child()
 

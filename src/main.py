@@ -18,14 +18,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import sys
-import gi
 from gettext import gettext as _
 from typing import Callable
 
-gi.require_version('Gtk', '4.0')
-gi.require_version('Adw', '1')
+import gi
 
-from gi.repository import Gio, Adw  # noqa: E402
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+
+from gi.repository import Adw, Gio  # noqa: E402
+
 from .window import WhisperWindow  # noqa: E402
 
 
@@ -33,12 +35,14 @@ class WhisperApplication(Adw.Application):
     """The main application singleton class."""
 
     def __init__(self):
-        super().__init__(application_id='de.flokoe.Whisper',
-                         flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
-                         resource_base_path='/de/flokoe/Whisper')
-        self.create_action('quit', lambda *_: self.quit(), ['<primary>q'])
-        self.create_action('about', self.on_about_action)
-        self.create_action('preferences', self.on_preferences_action)
+        super().__init__(
+            application_id="de.flokoe.Whisper",
+            flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
+            resource_base_path="/de/flokoe/Whisper",
+        )
+        self.create_action("quit", lambda *_: self.quit(), ["<primary>q"])
+        self.create_action("about", self.on_about_action)
+        self.create_action("preferences", self.on_preferences_action)
 
     def do_activate(self):
         """Called when the application is activated.
@@ -53,21 +57,28 @@ class WhisperApplication(Adw.Application):
 
     def on_about_action(self, *args: object) -> None:
         """Callback for the app.about action."""
-        about = Adw.AboutDialog(application_name='Whisper',
-                                application_icon='de.flokoe.Whisper',
-                                developer_name='Florian',
-                                version='0.1.0',
-                                developers=['Florian'],
-                                copyright='© 2025 Florian')
+        about = Adw.AboutDialog(
+            application_name="Whisper",
+            application_icon="de.flokoe.Whisper",
+            developer_name="Florian",
+            version="0.1.0",
+            developers=["Florian"],
+            copyright="© 2025 Florian",
+        )
         # Translators: Replace "translator-credits" with your name/username, and optionally an email or URL.
-        about.set_translator_credits(_('translator-credits'))
+        about.set_translator_credits(_("translator-credits"))
         about.present(self.props.active_window)
 
     def on_preferences_action(self, widget: Gio.SimpleAction, _: object) -> None:
         """Callback for the app.preferences action."""
-        print('app.preferences action activated')
+        print("app.preferences action activated")
 
-    def create_action(self, name: str, callback: Callable[..., None], shortcuts: list[str] | None = None):
+    def create_action(
+        self,
+        name: str,
+        callback: Callable[..., None],
+        shortcuts: list[str] | None = None,
+    ):
         """Add an application action.
 
         Args:
