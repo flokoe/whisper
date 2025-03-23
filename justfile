@@ -1,6 +1,6 @@
 # Build the app using flatpak-builder
 build:
-    flatpak-builder --force-clean build-dir de.flokoe.Whisper.json
+    flatpak-builder --force-clean --build-only build-dir de.flokoe.Whisper.json
 
 # Build and run the app using flatpak-builder
 dev: build
