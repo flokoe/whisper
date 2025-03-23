@@ -1,0 +1,46 @@
+{
+  "name": "whispr",
+  "remoteUser": "vscode",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "charliermarsh.ruff",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true",
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000",
+      "upgradePackages": "true"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": "false"
+    }
+  },
+  "mounts": [
+    "source=/dev/dri,target=/dev/dri,type=bind",
+    "source=/dev/snd,target=/dev/snd,type=bind"
+  ],
+  "runArgs": [
+    "--privileged",
+    "--group-add", "17",
+    "--group-add", "26",
+    "--group-add", "303"
+  ],
+  "containerEnv": {
+    "GDK_BACKEND": "wayland",
+    "GSK_RENDERER": "gl"
+  }
+}
