@@ -53,7 +53,7 @@ class WhisperApplication(Adw.Application):
 
     def on_about_action(self, *args: object) -> None:
         """Callback for the app.about action."""
-        about = Adw.AboutDialog(application_name='whisper',
+        about = Adw.AboutDialog(application_name='Whisper',
                                 application_icon='de.flokoe.Whisper',
                                 developer_name='Florian',
                                 version='0.1.0',
