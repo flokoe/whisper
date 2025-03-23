@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+**Always** use the `uv` cli to perform project and dependency management for Python projects.
+
+For example management of Python versions, virtual environments or adding/removing of dependencies.
+
+If I ask yout to install/add dependencies, **always** use `uv add`.
+
+If you need help using uv or I ask you about it check my custom documention @uv.
