@@ -3,29 +3,139 @@ using Adw 1;
 
 template $WhisperWindow: Adw.ApplicationWindow {
   title: _("Whisper");
-  default-width: 800;
-  default-height: 600;
+  default-width: 600;
+  default-height: 400;
 
-  content: Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {
-      [end]
-      MenuButton {
-        primary: true;
-        icon-name: "open-menu-symbolic";
-        tooltip-text: _("Main Menu");
-        menu-model: primary_menu;
+
+  Adw.NavigationView nav_view {
+    Adw.NavigationPage home {
+      title: _("Whisper");
+
+      Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          [start]
+          DropDown drop_down {
+            model: StringList {
+              strings [
+                "Voice",
+                "Dictate",
+                "Translate",
+                "EMail",
+              ]
+            };
+          }
+
+          [end]
+          MenuButton {
+            icon-name: "open-menu-symbolic";
+            tooltip-text: _("Main Menu");
+            primary: true;
+            menu-model: primary_menu;
+          }
+
+          [end]
+          Button {
+            icon-name: "folder-symbolic";
+          }
+        }
+
+        Box {
+          orientation: vertical;
+          valign: center;
+          halign: center;
+
+          Box {
+            orientation: vertical;
+            homogeneous: true;
+            margin-bottom: 24;
+
+            Box {
+              margin-bottom: 6;
+
+              Image {
+                icon-name: "system-file-manager-symbolic";
+                margin-end: 12;
+                icon-size: normal;
+              }
+
+              Label {
+                label: _("Select profile in the top left corner");
+              }
+            }
+
+            Box {
+              margin-bottom: 6;
+
+              Image {
+                icon-name: "audio-input-microphone-symbolic";
+                margin-end: 12;
+                icon-size: normal;
+              }
+
+              Label {
+                label: _("Hit <b>Record</b> or");
+                use-markup: true;
+              }
+
+              ShortcutsShortcut {
+                accelerator: "<Control>space";
+                margin-start: 12;
+              }
+
+              Label {
+                label: _("to start");
+              }
+            }
+          }
+
+          Box {
+            halign: center;
+
+            Button record {
+              name: "Record";
+              label: _("Record");
+
+              styles [
+                "suggested-action",
+              ]
+            }
+          }
+        }
       }
     }
 
-    content: Label label {
-      label: _("Hello, World!");
+    Adw.NavigationPage recording {
+      title: _("Recording...");
+      tag: "recording";
 
-      styles [
-        "title-1",
-      ]
-    };
-  };
+      Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {}
+
+        Box {
+          halign: center;
+          valign: center;
+
+          Box {
+            Button stop {
+              name: "Stop";
+              label: _("Stop");
+              margin-end: 12;
+            }
+
+            Button discard {
+              icon-name: "user-trash-symbolic";
+
+              styles [
+                "destructive-action",
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 menu primary_menu {
@@ -36,7 +146,7 @@ menu primary_menu {
     }
 
     item {
-      label: _("_Keyboard Shortcuts");
+      label: _("Keyboard Shortcuts");
       action: "win.show-help-overlay";
     }
 

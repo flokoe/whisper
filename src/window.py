@@ -26,7 +26,32 @@ from gi.repository import Adw, Gtk
 class WhisperWindow(Adw.ApplicationWindow):
     __gtype_name__ = "WhisperWindow"
 
-    label = Gtk.Template.Child()
+    nav_view = Gtk.Template.Child()
+    record = Gtk.Template.Child()
+    stop = Gtk.Template.Child()
+    discard = Gtk.Template.Child()
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        # Connect Record button click to handler
+        self.record.connect("clicked", self._on_record_clicked)
+
+        # Connect Stop and Discard buttons
+        self.stop.connect("clicked", self._on_stop_clicked)
+        self.discard.connect("clicked", self._on_discard_clicked)
+
+    def _on_record_clicked(self, button: Gtk.Button) -> None:
+        """Switch to recording page when Record button is clicked."""
+        # Navigate to the recording page
+        self.nav_view.push_by_tag("recording")
+
+    def _on_stop_clicked(self, button: Gtk.Button) -> None:
+        """Return to home page when Stop button is clicked."""
+        # Navigate back to the home page
+        self.nav_view.pop()
+
+    def _on_discard_clicked(self, button: Gtk.Button) -> None:
+        """Return to home page when Discard button is clicked."""
+        # Navigate back to the home page
+        self.nav_view.pop()
