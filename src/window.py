@@ -18,6 +18,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import uuid
+from gettext import gettext as _
 from pathlib import Path
 from typing import Any, Optional
 
@@ -81,6 +82,16 @@ class WhisperWindow(Adw.ApplicationWindow):
         if self.pipeline:
             self.pipeline.set_state(Gst.State.PLAYING)
 
+    def _pause_recording(self) -> None:
+        """Pause the audio recording temporarily."""
+        if self.pipeline:
+            self.pipeline.set_state(Gst.State.PAUSED)
+
+    def _resume_recording(self) -> None:
+        """Resume a paused audio recording."""
+        if self.pipeline:
+            self.pipeline.set_state(Gst.State.PLAYING)
+
     def _stop_recording(self) -> None:
         """Stop the audio recording."""
         if self.pipeline:
@@ -115,24 +126,118 @@ class WhisperWindow(Adw.ApplicationWindow):
         # Navigate back to the home page
         self.nav_view.pop()
 
+    def _create_discard_confirmation_dialog(
+        self,
+        heading: str = _("Discard Recording?"),
+        body: str = _(
+            "Are you sure you want to discard this recording? This action cannot be undone."
+        ),
+        discard_label: str = _("Discard"),
+        callback: Any = None,
+    ) -> Adw.MessageDialog:
+        """Create a confirmation dialog for discarding recordings.
+
+        Args:
+            heading: Dialog title
+            body: Dialog message
+            discard_label: Label for the discard button
+            callback: Function to call when dialog is responded to
+
+        Returns:
+            The configured dialog
+        """
+        dialog = Adw.MessageDialog.new(self, heading, body)
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("discard", discard_label)
+        dialog.set_response_appearance("discard", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_default_response("cancel")
+
+        if callback:
+            dialog.connect("response", callback)
+
+        return dialog
+
     def _on_discard_clicked(self, button: Gtk.Button) -> None:
         """Discard recording and return to home page when Discard button is clicked."""
-        # Discard the recording
-        self._discard_recording()
-        # Navigate back to the home page
-        self.nav_view.pop()
+        # Pause the recording while dialog is shown
+        self._pause_recording()
+
+        dialog = self._create_discard_confirmation_dialog(
+            callback=self._on_discard_dialog_response
+        )
+        dialog.present()
+
+    def _on_discard_dialog_response(
+        self, dialog: Adw.MessageDialog, response: str
+    ) -> None:
+        """Handle the response from the discard confirmation dialog."""
+        if response == "discard":
+            # Discard the recording
+            self._discard_recording()
+            # Navigate back to the home page
+            self.nav_view.pop()
+        else:
+            # Resume recording if canceled
+            self._resume_recording()
 
     def _on_nav_view_popped(
         self, nav_view: Gtk.Widget, page: Adw.NavigationPage
-    ) -> None:
+    ) -> bool:
         """Discard recording if user navigates back from recording page without using buttons."""
         # Check if we're popping from the recording page
         if page.get_tag() == "recording" and self.pipeline is not None:
-            # Discard the recording since user navigated away
+            # Pause the recording while dialog is shown
+            self._pause_recording()
+
+            dialog = self._create_discard_confirmation_dialog(
+                callback=self._on_nav_view_dialog_response
+            )
+            dialog.present()
+
+            # Prevent navigation for now (will be handled in dialog response)
+            return True
+        return False
+
+    def _on_nav_view_dialog_response(
+        self, dialog: Adw.MessageDialog, response: str
+    ) -> None:
+        """Handle the response from the nav_view discard confirmation dialog."""
+        if response == "discard":
+            # Discard the recording
             self._discard_recording()
+            # Now manually navigate back
+            self.nav_view.pop()
+        else:
+            # Resume recording if canceled
+            self._resume_recording()
 
     def _on_close_request(self, window: Adw.ApplicationWindow) -> bool:
         """Handle window close request by stopping any active recording."""
-        self._stop_recording()
-        self.pipeline = None
+        if self.pipeline is not None:
+            # Pause the recording while dialog is shown
+            self._pause_recording()
+
+            dialog = self._create_discard_confirmation_dialog(
+                body=_(
+                    "Closing the app will discard your current recording. This action cannot be undone."
+                ),
+                discard_label=_("Discard and Close"),
+                callback=self._on_close_dialog_response,
+            )
+            dialog.present()
+            return True  # Prevent window from closing until user responds
         return False  # Allow window to close
+
+    def _on_close_dialog_response(
+        self, dialog: Adw.MessageDialog, response: str
+    ) -> None:
+        """Handle the response from the close confirmation dialog."""
+        if response == "discard":
+            # Discard the recording
+            self._stop_recording()
+            self.pipeline = None
+            # Destroy window to close the app
+            self.destroy()
+        else:
+            # Resume recording if canceled
+            self._resume_recording()
