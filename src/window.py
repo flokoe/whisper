@@ -134,6 +134,7 @@ class WhisperWindow(Adw.ApplicationWindow):
         ),
         discard_label: str = _("Discard"),
         callback: Any = None,
+        show_save: bool = False,
     ) -> Adw.MessageDialog:
         """Create a confirmation dialog for discarding recordings.
 
@@ -142,15 +143,23 @@ class WhisperWindow(Adw.ApplicationWindow):
             body: Dialog message
             discard_label: Label for the discard button
             callback: Function to call when dialog is responded to
+            show_save: Whether to show a Save option (for navigation/close cases)
 
         Returns:
             The configured dialog
         """
         dialog = Adw.MessageDialog.new(self, heading, body)
-        dialog.add_response("cancel", _("Cancel"))
-        dialog.add_response("discard", discard_label)
+
+        if show_save:
+            dialog.add_response("save", _("Save"))
+            dialog.add_response("discard", discard_label)
+            dialog.set_default_response("save")
+        else:
+            dialog.add_response("cancel", _("Cancel"))
+            dialog.add_response("discard", discard_label)
+            dialog.set_default_response("cancel")
+
         dialog.set_response_appearance("discard", Adw.ResponseAppearance.DESTRUCTIVE)
-        dialog.set_default_response("cancel")
 
         if callback:
             dialog.connect("response", callback)
@@ -183,14 +192,18 @@ class WhisperWindow(Adw.ApplicationWindow):
     def _on_nav_view_popped(
         self, nav_view: Gtk.Widget, page: Adw.NavigationPage
     ) -> bool:
-        """Discard recording if user navigates back from recording page without using buttons."""
+        """Handle navigation back from recording page with option to save."""
         # Check if we're popping from the recording page
         if page.get_tag() == "recording" and self.pipeline is not None:
             # Pause the recording while dialog is shown
             self._pause_recording()
 
             dialog = self._create_discard_confirmation_dialog(
-                callback=self._on_nav_view_dialog_response
+                heading=_("Save Recording?"),
+                body=_("Do you want to save your current recording?"),
+                discard_label=_("Discard"),
+                callback=self._on_nav_view_dialog_response,
+                show_save=True,
             )
             dialog.present()
 
@@ -201,13 +214,19 @@ class WhisperWindow(Adw.ApplicationWindow):
     def _on_nav_view_dialog_response(
         self, dialog: Adw.MessageDialog, response: str
     ) -> None:
-        """Handle the response from the nav_view discard confirmation dialog."""
+        """Handle the response from the nav_view dialog."""
         if response == "discard":
             # Discard the recording
             self._discard_recording()
             # Now manually navigate back
             self.nav_view.pop()
-        else:
+        elif response == "save":
+            # Stop and save the recording
+            self._stop_recording()
+            self.pipeline = None
+            # Navigate back
+            self.nav_view.pop()
+        else:  # "cancel"
             # Resume recording if canceled
             self._resume_recording()
 
@@ -218,11 +237,11 @@ class WhisperWindow(Adw.ApplicationWindow):
             self._pause_recording()
 
             dialog = self._create_discard_confirmation_dialog(
-                body=_(
-                    "Closing the app will discard your current recording. This action cannot be undone."
-                ),
+                heading=_("Save Recording?"),
+                body=_("Do you want to save your recording before closing?"),
                 discard_label=_("Discard and Close"),
                 callback=self._on_close_dialog_response,
+                show_save=True,
             )
             dialog.present()
             return True  # Prevent window from closing until user responds
@@ -238,6 +257,12 @@ class WhisperWindow(Adw.ApplicationWindow):
             self.pipeline = None
             # Destroy window to close the app
             self.destroy()
-        else:
+        elif response == "save":
+            # Save the recording
+            self._stop_recording()
+            self.pipeline = None
+            # Destroy window to close the app
+            self.destroy()
+        else:  # "cancel"
             # Resume recording if canceled
             self._resume_recording()
