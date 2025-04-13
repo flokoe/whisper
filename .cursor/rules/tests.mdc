@@ -1,0 +1,21 @@
+---
+description: When and how to write tests for Python code
+globs: 
+alwaysApply: false
+---
+- Only write tests if asked.
+- Use pytest.
+- WRITE TESTS FIRST BEFORE ANY APPLICATION CODE.
+- Adhere to the following process:
+  1. Write a single test, no application code.
+  2. Run the test and see it fail.
+  3. Write the minimum code to pass the test. Don’t worry about edge cases or completeness yet.
+  4. Run the test and see it pass.
+  5. Refactor with confidence: Clean up the code while keeping all tests green.
+     Improve names, remove duplication, simplify logic, etc.
+- If you think I aked for multiple test say so, list the tests you want to write and start with the first one in the list.
+- Always create test files under `tests/`.
+- Always add `test_` prefix to file names.
+- Keep the cycle tight: test → fail → code → pass → refactor.
+- Avoid testing implementation details—test behavior.
+- Use helper functions to clean up repetitive test logic.

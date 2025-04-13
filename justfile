@@ -1,3 +1,5 @@
+alias test := tests
+
 # Build the app using flatpak-builder
 build:
     flatpak-builder --force-clean --build-only build-dir de.flokoe.Whisper.json
@@ -9,3 +11,7 @@ dev: build
 # Install the app using flatpak-builder
 install:
     flatpak-builder --user --force-clean --install build-dir de.flokoe.Whisper.json
+
+# Execute all tests
+tests:
+    uv run pytest tests/
