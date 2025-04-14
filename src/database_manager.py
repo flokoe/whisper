@@ -170,7 +170,7 @@ class DatabaseManager:
 
         # Set up migrations directory
         if migrations_dir is None:
-            current_dir = Path(__file__).parent.parent
+            current_dir = Path(__file__).parent
             migrations_dir = current_dir / "migrations"
 
         # Ensure migrations table exists

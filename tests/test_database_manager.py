@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.db.manager import DatabaseManager
+from src.database_manager import DatabaseManager
 
 
 def test_database_manager_connection() -> None:
