@@ -189,10 +189,11 @@ class DatabaseManager:
         pattern = re.compile(self.MIGRATION_FILE_PATTERN)
 
         # Apply migrations
+        applied_count = 0
         for filename in sorted(os.listdir(migrations_dir)):
             match = pattern.match(filename)
             if match:
-                name = match.groups()
+                name = match.group(1)  # Extract the first capturing group, which is the migration name
                 
                 if name not in applied_migrations:
                     file_path = migrations_dir / filename
@@ -207,7 +208,10 @@ class DatabaseManager:
 
                         # Record that this migration was applied
                         self.execute('INSERT INTO migrations (name) VALUES (?);', (name,))
-
+                    
+                    applied_count += 1
                     self.logger.info(f"Successfully applied migration `{filename}`")
                 else:
                     self.logger.debug(f"Skipping migration `{filename}`")
+                    
+        return applied_count

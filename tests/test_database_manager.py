@@ -171,3 +171,71 @@ def test_table_exists() -> None:
 
         # Test existing table
         assert db_manager.table_exists("test_table")
+
+def test_migrations() -> None:
+    """Test the migrations method for applying database migrations."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Create a temporary directory for migrations
+        migrations_dir = Path(temp_dir) / "migrations"
+        migrations_dir.mkdir()
+
+        # Create a test migration file with the correct naming pattern (YYYYMMDDHHMMSS_name.sql)
+        migration_file = migrations_dir / "20240101000000_test_migration.sql"
+        migration_file.write_text("""
+            CREATE TABLE test_migration (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL
+            );
+            INSERT INTO test_migration (name) VALUES ('test');
+        """)
+
+        # Create database and apply migrations
+        db_path: Path = Path(temp_dir) / "test.db"
+        db_manager: DatabaseManager = DatabaseManager(db_path)
+        
+        # Apply migrations
+        applied_count = db_manager.migrations(migrations_dir)
+        
+        # Verify correct count of applied migrations
+        assert applied_count == 1
+        
+        # Verify migration was applied by checking if the table exists
+        assert db_manager.table_exists("test_migration")
+        
+        # Verify migration was recorded in the migrations table
+        migrations = db_manager.query("SELECT name FROM migrations")
+        assert len(migrations) == 1
+        assert migrations[0]["name"] == "test_migration"
+        
+        # Verify data was inserted
+        results = db_manager.query("SELECT * FROM test_migration")
+        assert len(results) == 1
+        assert results[0]["name"] == "test"
+        
+        # Create another migration file to test that multiple migrations work
+        second_migration = migrations_dir / "20240101000001_second_migration.sql"
+        second_migration.write_text("""
+            CREATE TABLE second_table (
+                id INTEGER PRIMARY KEY,
+                value TEXT
+            );
+        """)
+        
+        # Apply migrations again
+        applied_count = db_manager.migrations(migrations_dir)
+        
+        # Verify correct count of applied migrations
+        assert applied_count == 1
+        
+        # Verify second migration was applied
+        assert db_manager.table_exists("second_table")
+        
+        # Verify both migrations are recorded
+        migrations = db_manager.query("SELECT name FROM migrations ORDER BY id")
+        assert len(migrations) == 2
+        assert migrations[0]["name"] == "test_migration"
+        assert migrations[1]["name"] == "second_migration"
+        
+        # Run migrations again to verify idempotence
+        applied_count = db_manager.migrations(migrations_dir)
+        assert applied_count == 0
