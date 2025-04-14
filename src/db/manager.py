@@ -133,35 +133,6 @@ class DatabaseManager:
         """Roll back the current transaction."""
         self.conn.rollback()
 
-    def transaction(self):
-        """Context manager for database transactions.
-
-        Usage:
-            with db.transaction():
-                db.execute("INSERT INTO ...")
-                db.execute("UPDATE ...")
-        """
-
-        class Transaction:
-            def __init__(self, db: DatabaseManager):
-                self.db = db
-
-            def __enter__(self):
-                return self.db
-
-            def __exit__(
-                self,
-                exc_type: Optional[Type[BaseException]],
-                exc_val: Optional[BaseException],
-                exc_tb: Optional[Any],
-            ) -> None:
-                if exc_type is not None:
-                    self.db.rollback()
-                else:
-                    self.db.commit()
-
-        return Transaction(self)
-
     def table_exists(self, table_name: str) -> bool:
         """Check if a table exists in the database.
 

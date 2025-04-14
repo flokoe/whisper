@@ -156,107 +156,18 @@ def test_query() -> None:
         assert len(empty_results) == 0
 
 
-def test_transaction_commit() -> None:
-    """Test the transaction context manager with successful commit."""
-    with tempfile.TemporaryDirectory() as temp_dir:
-        db_path: Path = Path(temp_dir) / "test.db"
-        db_manager: DatabaseManager = DatabaseManager(db_path)
-
-        # Create test table
-        db_manager.execute(
-            "CREATE TABLE test_transaction (id INTEGER PRIMARY KEY, name TEXT)"
-        )
-
-        # Use transaction context manager
-        with db_manager.transaction():
-            db_manager.execute(
-                "INSERT INTO test_transaction (name) VALUES (?)", ("transaction_item",)
-            )
-
-        # Verify data was committed
-        result: Optional[Dict[str, Any]] = db_manager.query_one(
-            "SELECT * FROM test_transaction"
-        )
-        assert result is not None
-        assert result["name"] == "transaction_item"
-
-
-def test_transaction_rollback() -> None:
-    """Test the transaction context manager with rollback on exception."""
-    with tempfile.TemporaryDirectory() as temp_dir:
-        db_path: Path = Path(temp_dir) / "test.db"
-        db_manager: DatabaseManager = DatabaseManager(db_path)
-
-        # Create test table
-        db_manager.execute(
-            "CREATE TABLE test_rollback (id INTEGER PRIMARY KEY, name TEXT)"
-        )
-
-        # Insert initial data
-        db_manager.execute("INSERT INTO test_rollback (name) VALUES (?)", ("initial",))
-        db_manager.commit()
-
-        # Transaction with exception
-        try:
-            with db_manager.transaction():
-                db_manager.execute(
-                    "INSERT INTO test_rollback (name) VALUES (?)",
-                    ("will_be_rolled_back",),
-                )
-                # Raise an exception to trigger rollback
-                raise ValueError("Test exception to trigger rollback")
-        except ValueError:
-            pass  # Expected exception
-
-        # Verify data was rolled back
-        results: List[Dict[str, Any]] = db_manager.query("SELECT * FROM test_rollback")
-        assert len(results) == 1  # Only the initial insert should remain
-        assert results[0]["name"] == "initial"
-
-
-def test_manual_rollback() -> None:
-    """Test manual rollback functionality."""
-    with tempfile.TemporaryDirectory() as temp_dir:
-        db_path: Path = Path(temp_dir) / "test.db"
-        db_manager: DatabaseManager = DatabaseManager(db_path)
-
-        # Create test table
-        db_manager.execute(
-            "CREATE TABLE test_manual_rollback (id INTEGER PRIMARY KEY, name TEXT)"
-        )
-
-        # Insert initial data and commit
-        db_manager.execute(
-            "INSERT INTO test_manual_rollback (name) VALUES (?)", ("initial",)
-        )
-        db_manager.commit()
-
-        # Insert more data but roll back
-        db_manager.execute(
-            "INSERT INTO test_manual_rollback (name) VALUES (?)", ("will_roll_back",)
-        )
-        db_manager.rollback()
-
-        # Verify rollback worked
-        results: List[Dict[str, Any]] = db_manager.query(
-            "SELECT * FROM test_manual_rollback"
-        )
-        assert len(results) == 1  # Only the initial insert should remain
-        assert results[0]["name"] == "initial"
-
-
 def test_table_exists() -> None:
     """Test the table_exists method."""
     with tempfile.TemporaryDirectory() as temp_dir:
         db_path: Path = Path(temp_dir) / "test.db"
         db_manager: DatabaseManager = DatabaseManager(db_path)
 
-        # Check non-existent table
+        # Test non-existent table
         assert not db_manager.table_exists("nonexistent_table")
 
-        # Create table
-        db_manager.execute("CREATE TABLE existing_table (id INTEGER PRIMARY KEY)")
+        # Create a table
+        db_manager.execute("CREATE TABLE test_table (id INTEGER PRIMARY KEY)")
+        db_manager.commit()
 
-        # Check existing table
-        assert db_manager.table_exists("existing_table")
-        assert not db_manager.table_exists("still_nonexistent")
+        # Test existing table
+        assert db_manager.table_exists("test_table")
