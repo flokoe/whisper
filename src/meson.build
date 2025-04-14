@@ -41,6 +41,11 @@ whisper_sources = [
   '__init__.py',
   'main.py',
   'window.py',
+  'database_manager.py',
 ]
 
 install_data(whisper_sources, install_dir: moduledir)
+
+# Install migrations
+migrations_dir = moduledir / 'migrations'
+install_data('migrations/20250414223100_create_recordings_table.sql', install_dir: migrations_dir)

@@ -20,11 +20,13 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import os
-import sys
-import signal
-import locale
+import argparse
 import gettext
+import locale
+import logging
+import os
+import signal
+import sys
 
 VERSION = '@VERSION@'
 pkgdatadir = '@pkgdatadir@'
@@ -36,10 +38,18 @@ locale.bindtextdomain('whisper', localedir)
 locale.textdomain('whisper')
 gettext.install('whisper', localedir)
 
+parser = argparse.ArgumentParser()
+
 if __name__ == '__main__':
     from gi.repository import Gio
     resource = Gio.Resource.load(os.path.join(pkgdatadir, 'whisper.gresource'))
     resource._register()  # type: ignore
+
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    args = parser.parse_args()
+
+    log_level = logging.DEBUG if args.debug else logging.INFO
+    logging.basicConfig(level=log_level)
 
     from whisper import main
     sys.exit(main.main(VERSION))

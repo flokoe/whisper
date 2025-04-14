@@ -7,6 +7,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+logger = logging.getLogger(__name__)
+
 
 class DatabaseManager:
     """A manager class for SQLite database operations.
@@ -15,7 +17,7 @@ class DatabaseManager:
     and handles database connections, transactions, and migrations.
     """
 
-    MIGRATION_FILE_PATTERN = r"^\d{14}_([a-z0-9_]+)\.sql$"  # YYYYMMDDHHMMSS format
+    MIGRATION_FILE_PATTERN = r"^(\d{14}_[a-z0-9_]+)\.sql$"  # YYYYMMDDHHMMSS format
 
     def __init__(self, db_path: Union[str, Path]) -> None:
         """Initialize the database manager.
@@ -25,7 +27,6 @@ class DatabaseManager:
         """
         self.db_path = Path(db_path)
         self._conn: Optional[sqlite3.Connection] = None
-        self.logger = logging.getLogger(__name__)
 
     @property
     def conn(self) -> sqlite3.Connection:
@@ -41,7 +42,7 @@ class DatabaseManager:
             # Enable foreign keys support
             self._conn.execute("PRAGMA foreign_keys = ON")
 
-            self.logger.debug(f"Connected to database at {self.db_path}")
+            logger.debug(f"Connected to database at {self.db_path}")
 
         return self._conn
 
@@ -50,7 +51,7 @@ class DatabaseManager:
         if self._conn is not None:
             self._conn.close()
             self._conn = None
-            self.logger.debug("Database connection closed")
+            logger.debug("Database connection closed")
 
     def execute(
         self, query: str, params: Optional[Tuple[Any, ...]] = None
@@ -185,7 +186,9 @@ class DatabaseManager:
             self.execute(create_migrations_table_sql)
 
         # Get applied migrations
-        applied_migrations = [row['name'] for row in self.query('SELECT name FROM migrations;')]
+        applied_migrations = [
+            row["name"] for row in self.query("SELECT name FROM migrations;")
+        ]
         pattern = re.compile(self.MIGRATION_FILE_PATTERN)
 
         # Apply migrations
@@ -193,8 +196,7 @@ class DatabaseManager:
         for filename in sorted(os.listdir(migrations_dir)):
             match = pattern.match(filename)
             if match:
-                name = match.group(1)  # Extract the first capturing group, which is the migration name
-                
+                name = match.group(1)  # Extract the first capturing group
                 if name not in applied_migrations:
                     file_path = migrations_dir / filename
 
@@ -207,11 +209,13 @@ class DatabaseManager:
                         self.executescript(sql)
 
                         # Record that this migration was applied
-                        self.execute('INSERT INTO migrations (name) VALUES (?);', (name,))
-                    
+                        self.execute(
+                            "INSERT INTO migrations (name) VALUES (?);", (name,)
+                        )
+
                     applied_count += 1
-                    self.logger.info(f"Successfully applied migration `{filename}`")
+                    logger.info(f"Successfully applied migration `{name}`")
                 else:
-                    self.logger.debug(f"Skipping migration `{filename}`")
-                    
+                    logger.debug(f"Skipping migration `{name}`")
+
         return applied_count

@@ -17,7 +17,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import sys
 from gettext import gettext as _
 from typing import Callable
 
@@ -102,4 +101,4 @@ class WhisperApplication(Adw.Application):
 def main(version: str) -> int:
     """The application's entry point."""
     app = WhisperApplication()
-    return app.run(sys.argv)
+    return app.run([])

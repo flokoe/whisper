@@ -24,6 +24,8 @@ from typing import Any, Optional
 
 from gi.repository import Adw, GLib, Gst, Gtk
 
+from .database_manager import DatabaseManager
+
 
 @Gtk.Template(resource_path="/de/flokoe/Whisper/window.ui")
 class WhisperWindow(Adw.ApplicationWindow):
@@ -33,6 +35,11 @@ class WhisperWindow(Adw.ApplicationWindow):
     record = Gtk.Template.Child()
     stop = Gtk.Template.Child()
     discard = Gtk.Template.Child()
+
+    # Database
+    data_dir = Path(GLib.get_user_data_dir())
+    db = DatabaseManager(data_dir / "whisper.db")
+    db.migrations()
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

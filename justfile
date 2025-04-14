@@ -6,7 +6,7 @@ build:
 
 # Build and run the app using flatpak-builder
 dev: build
-    flatpak-builder --run build-dir de.flokoe.Whisper.json whisper
+    flatpak-builder --run build-dir de.flokoe.Whisper.json whisper --debug
 
 # Install the app using flatpak-builder
 install:
